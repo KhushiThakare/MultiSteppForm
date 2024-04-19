@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Stepper, Step, StepLabel, Button, Typography, TextField, Container, Grid, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import jsPDF from 'jspdf'; // Import jspdf library for PDF generation
-
+ 
+  import 'jspdf-autotable';
 import './App.css'; // Import CSS file for styles
 
 function MultiStepForm() {
@@ -143,41 +144,76 @@ function MultiStepForm() {
     setShowThankYouDialog(false); // Close the thank you dialog
   };
 
+
+ 
   const generatePDF = () => {
     const pdf = new jsPDF();
-    if (personalInfo.imagePreview) {
-      const imgData = personalInfo.imagePreview;
-      pdf.addImage(imgData, 'JPEG', 10, 210, 50, 50);
-    }
-    // Add personal information
-    pdf.text(`First Name: ${personalInfo.firstName}`, 10, 10);
-    pdf.text(`Last Name: ${personalInfo.lastName}`, 10, 20);
-    pdf.text(`Email: ${personalInfo.email}`, 10, 30);
-    pdf.text(`Date of Birth: ${personalInfo.dateOfBirth}`, 10, 40);
-    pdf.text(`Phone: ${personalInfo.phone}`, 10, 50);
+    // Add profile image if available
+      if (personalInfo.imagePreview) {
+        const imgData = personalInfo.imagePreview;
+        pdf.addImage(imgData, 'JPEG', 10, 10, 50, 50);
+      }
+
+    // Define table columns and rows
+    const tableRows = [
+      ["First Name", personalInfo.firstName],
+      ["Last Name", personalInfo.lastName],
+      ["Email", personalInfo.email],
+      ["Date of Birth", personalInfo.dateOfBirth],
+      ["Phone", personalInfo.phone],
+      ["Degree", educationDetails.degree],
+      ["Institution", educationDetails.institution],
+      ["Graduation Year", educationDetails.graduationYear],
+      ["University No", educationDetails.number],
+      ["10th Percentage", educationDetails.tenthPercentage],
+      ["12th Percentage", educationDetails.twelfthPercentage],
+      ["Skills", educationDetails.skills],
+      ["Address1", address.address],
+      ["Address2", address.address1],
+      ["Street", address.street],
+      ["City", address.city],
+      ["State", address.state],
+      ["ZIP Code", address.zip],
+    ];
   
-    // Add education details
-    pdf.text(`Degree: ${educationDetails.degree}`, 10, 70);
-    pdf.text(`Institution: ${educationDetails.institution}`, 10, 80);
-    pdf.text(`Graduation Year: ${educationDetails.graduationYear}`, 10, 90);
-    pdf.text(`University No: ${educationDetails.number}`, 10, 100);
-    pdf.text(`10th Percentage: ${educationDetails.tenthPercentage}`, 10, 110);
-    pdf.text(`12th Percentage: ${educationDetails.twelfthPercentage}`, 10, 120);
+    // Set table properties
+    const startY = 70; // Initial y position for table
+    const cellWidth = 80; // Width of each cell
   
-    // Add address
-    pdf.text(`Address1: ${address.address}`, 10, 140);
-    pdf.text(`Address2: ${address.address1}`, 10, 150);
-    pdf.text(`Street: ${address.street}`, 10, 160);
-    pdf.text(`City: ${address.city}`, 10, 170);
-    pdf.text(`State: ${address.state}`, 10, 180);
-    pdf.text(`ZIP Code: ${address.zip}`, 10, 190);
+    // Define custom theme object
+    const customTheme = {
+      tableLineColor: [0, 0, 0], // Color of the table lines (RGB array)
+      tableLineWidth: 0.2, // Width of the table lines
+      textColor: [0, 0, 0], // Text color (RGB array)
+      fontStyle: 'normal', // Font style (normal, bold, italic)
+      overflow: 'linebreak', // Overflow behavior of text in cells
+      fillColor: [255, 255, 255], // Fill color of the table cells (RGB array)
+      rowHeight: 10, // Height of each row
+      columnWidth: 'auto', // Width of each column
+      cellPadding: 2, // Padding of the cells
+      valign: 'middle', // Vertical alignment of the content within cells
+      halign: 'left', // Horizontal alignment of the content within cells
+      fontSize: 10, // Font size of the text in cells
+    };
   
-    // Add profile image
-   
+    // Add table to PDF with custom theme
+    pdf.autoTable({
+      startY: startY,
+      head: [['Details', 'Information']],
+      body: tableRows,
+      theme: 'grid', // Use predefined theme or custom theme object
+      columnStyles: {
+        0: { cellWidth: cellWidth, fontStyle: 'bold' },
+        1: { cellWidth: 'auto' },
+      },
+      styles: { fontSize: 10, overflow: 'linebreak' },
+      ...customTheme, // Spread custom theme properties
+    });
   
     // Save the PDF
     pdf.save('form_preview.pdf');
   };
+  
   
   useEffect(() => {
     // Save form data to localStorage
